@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Advanced Tactical Army Builder</title>
+        <style>
+            :root {
+            --bg-color: #1a1a20;
+            --panel-bg: #252530;
+            --text-color: #e0e0e0;
+            --accent: #e6b800;
+            
+            --mythic: #e6b800;
+            --epic: #9b59b6;
+            --rare: #3498db;
+            --uncommon: #2ecc71;
+            
+            --fire: #e74c3c;
+            --frost: #00ced1;
+            --lightning: #a335ee;
+            --physical: #95a5a6;
+            --all: #ecf0f1;
+            }
+            * {
+            box-sizing: border-box;
+            }
+            body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            height: 100vh;
+            overflow: hidden;
+            }
+            h1,
+            h2,
+            h3,
+            h4 {
+            color: var(--accent);
+            margin-top: 0;
+            margin-bottom: 10px;
+            }
+            
+            .left-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            padding-right: 10px;
+            }
+            .right-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+            min-width: 350px;
+            }
+            
+            .config-box {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            }
+            .config-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            }
+            .config-row label {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.85em;
+            color: #aaa;
+            flex: 1;
+            min-width: 120px;
+            }
+            .config-row select,
+            .config-row input {
+            padding: 6px;
+            background: #111;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            width: 100%;
+            }
+            .config-note {
+            font-size: 0.85em;
+            color: var(--accent);
+            margin-bottom: 5px;
+            }
+            
+            button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            }
+            .btn-primary {
+            background: var(--accent);
+            color: #000;
+            }
+            .btn-primary:hover {
+            background: #ffd700;
+            }
+            .btn-danger {
+            background: #c0392b;
+            color: white;
+            }
+            .btn-danger:hover {
+            background: #e74c3c;
+            }
+            .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            }
+            
+            .army-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            background: #15151a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            }
+            .slot {
+            background: #1e1e26;
+            border: 2px dashed #444;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 120px;
+            }
+            .slot.restricted {
+            border-color: #2a2a2a;
+            background: #18181e;
+            }
+            .slot.empty {
+            border: none;
+            background: transparent;
+            pointer-events: none;
+            }
+            .slot select {
+            width: 100%;
+            padding: 6px;
+            background: #111;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            }
+            .slot select:disabled {
+            background: #222;
+            color: #777;
+            border-color: #333;
+            cursor: not-allowed;
+            }
+            .slot select option:disabled {
+            color: #555;
+            font-style: italic;
+            }
+            .slot-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #888;
+            }
+            .empty-slot-text {
+            text-align: center;
+            color: #555;
+            font-size: 0.8em;
+            margin-top: 10px;
+            }
+            
+            .champ-card {
+            background: #111;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 4px solid gray;
+            font-size: 0.8em;
+            }
+            .champ-card em {
+            color: #3498db;
+            }
+            .btn-remove {
+            width: 100%;
+            margin-top: 8px;
+            background: #8e44ad;
+            color: white;
+            padding: 4px;
+            font-size: 0.9em;
+            }
+            
+            .filters {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            }
+            .filters select,
+            .filters input {
+            padding: 6px;
+            background: #111;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 100px;
+            }
+            .champ-list {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 5px;
+            }
+            .champ-item {
+            background: #181820;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 5px solid gray;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.85em;
+            transition: 0.2s;
+            }
+            .champ-item.disabled {
+            opacity: 0.4;
+            border-left-color: #444 !important;
+            filter: grayscale(100%);
+            }
+            
+            .champ-item[data-tier="Mythic"] {
+            border-color: var(--mythic);
+            }
+            .champ-item[data-tier="Epic"] {
+            border-color: var(--epic);
+            }
+            .champ-item[data-tier="Rare"] {
+            border-color: var(--rare);
+            }
+            .champ-item[data-tier="Uncommon"] {
+            border-color: var(--uncommon);
+            }
+            .champ-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            }
+            .champ-header strong {
+            font-size: 1.1em;
+            color: white;
+            }
+            .champ-tags {
+            color: #aaa;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            }
+            .champ-lock-warn {
+            color: var(--accent);
+            }
+            .champ-ability {
+            color: #3498db;
+            font-weight: bold;
+            margin-top: 2px;
+            }
+            .champ-passives {
+            color: #888;
+            font-style: italic;
+            }
+            .champ-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 5px;
+            }
+            .champ-assign-row {
+            display: flex;
+            gap: 5px;
+            }
+            .champ-assign-row select {
+            flex: 2;
+            padding: 5px;
+            background: #111;
+            color: white;
+            border: 1px solid #555;
+            }
+            .champ-assign-row button {
+            flex: 1;
+            padding: 5px;
+            font-size: 0.9em;
+            }
+            .btn-assign {
+            background: #2ecc71;
+            color: #000;
+            }
+            .btn-assign:disabled {
+            background: #555;
+            cursor: not-allowed;
+            color: #888;
+            }
+            .btn-toggle {
+            background: #555;
+            color: white;
+            padding: 5px;
+            font-size: 0.9em;
+            width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- LEFT PANEL: Auto-Builder & Army Grid -->
+        <div class="left-panel">
+            <!-- Smart Auto-Builder Config -->
+            <div class="config-box">
+                <h2>Fast Army Builder</h2>
+                <div class="config-row">
+                    <label>
+                        Target Enemy Unit
+                        <select id="auto-unit">
+                            <option value="None">None</option>
+                            <option value="Axes">Counter Axes (Prioritize Archers/Swords)</option>
+                            <option value="Swordsmen">Counter Swordsmen (Prioritize Crossbows/Cav)</option>
+                            <option value="Cavalry">Counter Cavalry (Prioritize Catapults/Axes)</option>
+                        </select>
+                    </label>
+                    <label>
+                        Target Enemy Element
+                        <select id="auto-element">
+                            <option value="None">None</option>
+                            <option value="Physical">Counter Physical (Slayer/Defense/Fire Spec)</option>
+                            <option value="Fire">Counter Fire (Slayer/Defense/Frost Spec)</option>
+                            <option value="Frost">Counter Frost (Slayer/Defense/Lightning Spec)</option>
+                            <option value="Lightning">Counter Lightning (Slayer/Defense/Fire Spec)</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="config-row">
+                    <label>Prioritize Ability Effects (Comma Separated)
+                    <input type="text" id="auto-ability" placeholder="e.g. Damage, Taunt, Ally Atk">
+                    </label>
+                    <label>Prioritize Passives (Comma Separated)
+                    <input type="text" id="auto-passive" placeholder="e.g. Splash, Speed, Health">
+                    </label>
+                </div>
+                <div class="config-note">Configure Army Roles (Strictly enforced):</div>
+                <div class="config-row" id="slot-configs">
+                    <!-- Injected via JS -->
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="executeAutoBuild()">Generate Army</button>
+                    <button class="btn-danger" onclick="clearArmy()">Clear Board</button>
+                </div>
+            </div>
+            <!-- Army Slots (3x3 Grid) -->
+            <div>
+                <h3>Army Formation</h3>
+                <div class="army-grid" id="army-grid">
+                    <!-- 9 Grid slots injected by JS -->
+                </div>
+            </div>
+        </div>
+        <!-- RIGHT PANEL: Database -->
+        <div class="right-panel">
+            <h2>Champions</h2>
+            <div class="filters">
+                <input type="text" id="filter-name" placeholder="Search Name..." onkeyup="renderDatabase()">
+                <select id="filter-role" onchange="renderDatabase()">
+                    <option value="All">All Roles</option>
+                    <option value="Tank">Tank</option>
+                    <option value="DPS">DPS</option>
+                    <option value="Engineer">Engineer</option>
+                </select>
+                <select id="filter-tier" onchange="renderDatabase()">
+                    <option value="All">All Tiers</option>
+                    <option value="Mythic">Mythic</option>
+                    <option value="Epic">Epic</option>
+                    <option value="Rare">Rare</option>
+                    <option value="Uncommon">Uncommon</option>
+                </select>
+                <select id="filter-element" onchange="renderDatabase()">
+                    <option value="All">All Elements</option>
+                    <option value="Physical">Physical</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Frost">Frost</option>
+                    <option value="Lightning">Lightning</option>
+                    <option value="None">None</option>
+                </select>
+                <input type="text" id="filter-passive" placeholder="Search Keyword..." onkeyup="renderDatabase()">
+            </div>
+            <div class="champ-list" id="champion-list">
+                <!-- Champions injected by JS -->
+            </div>
+        </div>
+        <script>
+            const UNIT_TYPES = [
+                { id: 'Archers', role: 'DPS' },
+                { id: 'Crossbowmen', role: 'DPS' },
+                { id: 'Catapults', role: 'DPS' },
+                { id: 'Axes', role: 'Tank' },
+                { id: 'Swordsmen', role: 'Tank' },
+                { id: 'Cavalry', role: 'Tank' },
+                { id: 'Trebuchets', role: 'Engineer' }
+            ];
+            
+            const CHAMPIONS_DATA = [
+            
+            
+                { name: 'William', roles: ['Tank'], unitLock: 'Any', tier: 'Uncommon', element: 'Fire', abilities: ['Taunt', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Fire Defense'] },
+                { name: 'Sorelle', roles: ['Tank'], unitLock: 'Any', tier: 'Uncommon', element: 'Fire', abilities: ['Damage', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Fire Defense'] },
+            
+            
+                { name: 'Henry', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Damage', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Human Defense'] },
+                { name: 'Godfrey', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Battalion Defense'], passives: ['Health', 'Battalion Size', 'Human Defense'] },
+                { name: 'Liona', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Battalion Speed', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Speed'] },
+            
+                { name: 'Aubrey', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Damage', 'Enemy Defense'], passives: ['Health', 'Battalion Size', 'Fire Defense'] },
+                { name: 'Wallace', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Damage', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Fire Defense'] },
+                { name: 'Arga', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Taunt', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Fire Defense'] },
+                { name: 'Gorza', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Damage'], passives: ['Health', 'Battalion Size', 'Fire Defense'] },
+            
+                { name: 'Dirk', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Ally Defense'], passives: ['Health', 'Battalion Size', 'Frost Defense'] },
+                { name: 'Gerard', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Taunt', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Frost Defense'] },
+                { name: 'Ulric', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Ally Speed', 'Ally Attack'], passives: ['Health', 'Battalion Size', 'Frost Defense'] },
+                { name: 'Unger', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Damage', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Frost Defense'] },
+            
+                { name: 'Valentina', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Lightning Defense'] },
+                { name: 'Erik', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Lightning Defense'] },
+                { name: 'Erinna', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Taunt', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Lightning Defense'] },
+                { name: 'Jehzra', roles: ['Tank'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage', 'Battalion Defense', 'Battalion Speed'], passives: ['Health', 'Battalion Size', 'Lightning Defense'] },
+            
+            
+                { name: 'Terric', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Enemy Attack', 'Enemy Damage'], passives: ['Health', 'Battalion Size', 'Physical Defense', 'Speed'] },
+                { name: 'Baldric', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Battalion Defense', 'Ally Attack'], passives: ['Health', 'Battalion Size', 'Physical Defense', 'Bolt Defense'] },
+                { name: 'Basilea', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Taunt', 'Battalion Attack', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Physical Defense', 'Arrow Defense'] },
+            
+                { name: 'Grummok', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Damage', 'Ally Speed'], passives: ['Health', 'Battalion Size', 'Fire Defense', 'Bolt Defense'] },
+                { name: 'Aurela', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Damage', 'Battalion Defense'], passives: ['Health', 'Redtusk Slayer', 'Fire Defense', 'Bolt Defense'] },
+                { name: 'Scarlett', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Taunt', 'Battalion Defense'], passives: ['Health', 'Battalion Size', 'Fire Defense', 'Tank Health [Army]'] },
+            
+                { name: 'Xenyth', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Enemy Defense'], passives: ['Health', 'Battalion Size', 'Frost Defense', 'Boulder Defense'] },
+                { name: 'Dreadthane', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Enemy Defense'], passives: ['Health', 'Battalion Size', 'Frost Defense', 'Boulder Defense'] },
+                { name: 'Thyra', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Battalion Attack'], passives: ['Health', 'Battalion Size', 'Frost Defense', 'Boulder Defense'] },
+                { name: 'Farah', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Enemy Speed'], passives: ['Health', 'Battalion Size', 'Frost Defense', 'Boulder Defense'] },
+            
+                { name: 'Robert', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Lightning', abilities: ['Damage', 'Stun'], passives: ['Health', 'Battalion Size', 'Lightning Defense', 'Speed'] },
+                { name: 'Alyssia', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Lightning', abilities: ['Taunt', 'Ally Defense', 'Ally Attack'], passives: ['Health', 'Battalion Size', 'Lightning Defense', 'Arrow Defense'] },
+                { name: 'Draven', roles: ['Tank'], unitLock: 'Any', tier: 'Epic', element: 'Lightning', abilities: ['Ally Defense'], passives: ['Health', 'Battalion Size', 'Lightning Defense', 'Arrow Defense'] },
+            
+            
+                { name: 'Commander Terric', roles: ['Tank'], unitLock: 'Cavalry', tier: 'Mythic', element: 'None', abilities: ['Fear', 'Enemy Attack', 'Enemy Defense'], passives: ['Health', 'Battalion Size', 'Cavalry Arrow Defense [Army]', 'Cavalry Speed [Army]', 'Crossbowmen Speed [Army]', 'Cavalry Health [Army]'] },
+            
+            
+            
+                { name: 'Winowen', roles: ['DPS'], unitLock: 'Any', tier: 'Uncommon', element: 'Fire', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Fire Slayer'] },
+                { name: 'Rowan', roles: ['DPS'], unitLock: 'Any', tier: 'Uncommon', element: 'Fire', abilities: ['Ally Attack'], passives: ['Damage', 'Battalion Size', 'Fire Slayer'] },
+            
+            
+                { name: 'Agnes', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Ally Attack'], passives: ['Damage', 'Battalion Size', 'Splash'] },
+                { name: 'Sigurd', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Damage', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Range'] },
+                { name: 'Zeke', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Damage', 'Enemy Speed', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Range'] },
+            
+                { name: 'Hilda', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Battalion Attack'], passives: ['Damage', 'Battalion Size', 'Fire Slayer'] },
+                { name: 'Sarah', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Fire Slayer'] },
+                { name: 'Soren', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Ally Attack'], passives: ['Damage', 'Battalion Size', 'Fire Slayer'] },
+                { name: 'Varessa', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Battalion Attack'], passives: ['Damage', 'Battalion Size', 'Fire Slayer'] },
+                { name: 'Krugar', roles: ['DPS', 'Tank'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Damage', 'Battalion Speed'], passives: ['Damage', 'Redtusk Slayer', 'Fire Defense', 'Speed'] },
+            
+                { name: 'Razeen', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Damage', 'Battalion Attack'], passives: ['Damage', 'Battalion Size', 'Frost Slayer'] },
+                { name: 'Muriel', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Damage', 'Battalion Attack'], passives: ['Damage', 'Battalion Size', 'Frost Slayer'] },
+                { name: 'Julia', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Target', 'Damage'], passives: ['Damage', 'Battalion Size', 'Frost Slayer'] },
+                { name: 'Hawthorn', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Damage', 'Ally Speed'], passives: ['Damage', 'Battalion Size', 'Frost Slayer'] },
+            
+                { name: 'Mei Lin', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Lightning Slayer'] },
+                { name: 'Darvash', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Lightning Slayer'] },
+                { name: 'Cassian', roles: ['DPS'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Lightning Slayer'] },
+            
+            
+                { name: 'Edor', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'None', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Splash', 'Heavy Slayer'] },
+                { name: 'Kaori', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'None', abilities: ['Ally Attack', 'Ally Speed'], passives: ['Damage', 'Battalion Size', 'Range', 'Medium Slayer'] },
+            
+                { name: 'Vanessira', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Target', 'Damage', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Fire Specialist', 'Medium Slayer [Army]'] },
+                { name: 'Vul\'koth', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Enemy Speed', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Fire Specialist', 'Medium Slayer'] },
+                { name: 'Rose', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Ally Defense [Tank]', 'Ally Attack [DPS]'], passives: ['Damage', 'Battalion Size', 'Fire Specialist', 'Speed [Army]'] },
+                { name: 'Isadora', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Physical', abilities: ['Ally Defense', 'Battalion Attack'], passives: ['Damage', 'Battalion Size', 'Fire Specialist', 'Range'] },
+            
+                { name: 'Nexarra', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Enemy Attack', 'Stun'], passives: ['Damage', 'Battalion Size', 'Frost Specialist', 'Heavy Slayer', 'Dragon Slayer'] },
+                { name: 'Soryn', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Damage', 'Ally Attack'], passives: ['Damage', 'Battalion Size', 'Frost Specialist', 'Fire Slayer [Army]'] },
+                { name: 'Khamsin', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Damage', 'Ally Attack', 'Ally Speed'], passives: ['Damage', 'Redtusk Slayer', 'Frost Specialist', 'Heavy Slayer'] },
+                { name: 'Thrax', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Fire', abilities: ['Chilled', 'Damage', 'Enemy Attack', 'Enemy Speed'], passives: ['Damage', 'Battalion Size', 'Frost Specialist', 'Heavy Slayer [Army]'] },
+            
+                { name: 'Mortimer', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Ally Attack'], passives: ['Damage', 'Battalion Size', 'Lightning Specialist', 'Light Slayer'] },
+                { name: 'Thorvald', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Ally Attack', 'Ally Speed'], passives: ['Damage', 'Battalion Size', 'Lightning Specialist', 'Light Slayer'] },
+                { name: 'Alkaz', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Lightning Specialist', 'Light Slayer'] },
+                { name: 'Maelith', roles: ['DPS'], unitLock: 'Any', tier: 'Epic', element: 'Frost', abilities: ['Damage', 'Enemy Attack', 'Stun'], passives: ['Damage', 'Battalion Size', 'Lightning Specialist', 'Light Slayer [Army]'] },
+            
+            
+                { name: 'Commander Kaori', roles: ['DPS'], unitLock: 'Crossbowmen', tier: 'Mythic', element: 'Physical', abilities: ['Fear', 'Damage', 'Enemy Attack', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Fire Specialist', 'Crossbowmen Damage [Army]', 'Medium Slayer [Army]'] },
+            
+            
+            
+                { name: 'Marian', roles: ['Engineer', 'DPS'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Ally Attack'], passives: ['Damage', 'Battalion Size', 'Range'] },
+                { name: 'Matilda', roles: ['Engineer', 'DPS'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Damage', 'Enemy Defense'], passives: ['Damage', 'Battalion Size', 'Splash'] },
+                { name: 'Lance', roles: ['Engineer', 'Tank'], unitLock: 'Any', tier: 'Rare', element: 'None', abilities: ['Damage', 'Enemy Attack'], passives: ['Health', 'Battalion Size', 'Human Defense', 'Trebuchet Splash'] },
+            
+                { name: 'Nigel', roles: ['Engineer', 'DPS'], unitLock: 'Any', tier: 'Rare', element: 'Fire', abilities: ['Target', 'Damage'], passives: ['Damage', 'Battalion Size', 'Fire Slayer', 'Trebuchet Speed [Army]'] },
+            
+                { name: 'Tariq', roles: ['Engineer', 'Tank'], unitLock: 'Any', tier: 'Rare', element: 'Frost', abilities: ['Enemy Attack'], passives: ['Health', 'Battalion Size', 'Frost Defense', 'Trebuchet Splash'] },
+            
+                { name: 'Osbert', roles: ['Engineer', 'DPS'], unitLock: 'Any', tier: 'Rare', element: 'Lightning', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Lightning Slayer', 'Trebuchet Speed [Army]'] },
+            
+            
+                { name: 'Jae', roles: ['Engineer'], unitLock: 'Trebuchets', tier: 'Epic', element: 'None', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Structure Damage', 'Trebuchet Speed [Army]'] },
+                { name: 'Eldyth', roles: ['Engineer'], unitLock: 'Trebuchets', tier: 'Epic', element: 'None', abilities: ['Enemy Speed', 'Stun'], passives: ['Damage', 'Battalion Size', 'Structure Damage', 'Trebuchet Speed [Army]'] },
+                { name: 'Kalathar', roles: ['Engineer'], unitLock: 'Trebuchets', tier: 'Epic', element: 'None', abilities: ['Damage'], passives: ['Damage', 'Battalion Size', 'Splash', 'Setup Speed [Army]'] },
+            
+            
+                { name: 'C. Khor\'ash', roles: ['Engineer'], unitLock: 'Trebuchets', tier: 'Mythic', element: 'None', abilities: ['Burning', 'Damage', 'Ally Attack [Structure]'], passives: ['Damage', 'Battalion Size', 'Structure Damage [Army]', 'Trebuchet Damage [Army]', 'Setup Speed [Army]'] }
+            ];
+            
+            const SLOT_NAMES = ["Front L", "Front C", "Front R", "Middle L", "Middle R", "Back L", "Back R"];
+            
+            
+            
+            
+            let database = CHAMPIONS_DATA.map((c, idx) => ({ ...c, id: 'c' + idx, excluded: false }));
+            let army = Array(7).fill().map(() => ({ unit: null, champion: null }));
+            
+            
+            
+            
+            function initUI() {
+                const slotConfigs = document.getElementById('slot-configs');
+                let configHtml = '';
+            
+                for (let i = 0; i < 7; i++) {
+            
+                    configHtml += `
+                    <label>${SLOT_NAMES[i]}
+                        <select id="cfg-s${i}" onchange="handleRoleChange(${i}, this.value)">
+                            <option value="Any">Any Unit</option>
+                            <option value="Tank" ${i === 0 || i === 2 || i === 3 || i === 4 ? 'selected' : ''}>Tank</option>
+                            <option value="DPS" ${i === 1 || i === 5 || i === 6 ? 'selected' : ''}>DPS</option>
+                            <option value="Engineer">Engineer</option>
+                        </select>
+                    </label>
+                `;
+                }
+                slotConfigs.innerHTML = configHtml;
+            
+                renderArmy();
+                renderDatabase();
+            }
+            
+            
+            
+            
+            
+            
+            function renderArmy() {
+                const grid = document.getElementById('army-grid');
+                grid.innerHTML = '';
+            
+                let activeIdx = 0;
+            
+                for (let i = 0; i < 9; i++) {
+            
+                    if (i === 4 || i === 7) {
+                        grid.innerHTML += `<div class="slot empty"></div>`;
+                        continue;
+                    }
+            
+                    const slot = army[activeIdx];
+                    const isChampSlot = activeIdx >= 3;
+                    const isLocked = slot.champion && slot.champion.unitLock !== 'Any';
+            
+            
+            
+            
+                    const configuredRole = document.getElementById(`cfg-s${activeIdx}`).value;
+                    let availableUnits = UNIT_TYPES;
+                    if (configuredRole !== 'Any') {
+                        availableUnits = UNIT_TYPES.filter(u => u.role === configuredRole);
+                    }
+            
+            
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = `slot ${!isChampSlot ? 'restricted' : ''}`;
+            
+                    let html = `
+                    <div class="slot-title">
+                        ${SLOT_NAMES[activeIdx]} 
+                    </div>`;
+            
+            
+                    let unitSelect = `
+                    <select onchange="updateUnit(${activeIdx}, this.value)" ${isLocked ? 'disabled title="Locked by Champion"' : ''}>
+                        <option value="">-- Select Unit --</option>`;
+            
+                    availableUnits.forEach(u => {
+            
+                        let isTrebDisabled = (u.id === 'Trebuchets' && slot.champion && !slot.champion.roles.includes('Engineer'));
+                        let disableOpt = isTrebDisabled ? 'disabled title="Requires Engineer"' : '';
+            
+                        unitSelect += `<option value="${u.id}" ${slot.unit === u.id ? 'selected' : ''} ${disableOpt}>${u.id} (${u.role})</option>`;
+                    });
+                    unitSelect += `</select>`;
+            
+                    html += unitSelect;
+            
+            
+                    if (isChampSlot) {
+                        if (slot.champion) {
+                            html += `
+                            <div class="champ-card" style="border-color: var(--${slot.champion.tier.toLowerCase()})">
+                                <strong>${slot.champion.name}</strong> (${slot.champion.roles.join(' / ')})<br>
+                                <span style="color: var(--${slot.champion.element.toLowerCase()})">${slot.champion.element}</span> | ${slot.champion.tier}<br>
+                                <em>★ ${slot.champion.abilities.join(' • ')}</em>
+                                <button class="btn-remove" onclick="removeChampion(${activeIdx})">Remove</button>
+                            </div>
+                        `;
+                        } else {
+                            html += `<div class="empty-slot-text">Empty Champ Slot</div>`;
+                        }
+                    }
+            
+                    slotDiv.innerHTML = html;
+                    grid.appendChild(slotDiv);
+                    activeIdx++;
+                }
+            }
+            
+            
+            function renderDatabase() {
+                const list = document.getElementById('champion-list');
+            
+                const nameSearch = document.getElementById('filter-name').value.toLowerCase();
+                const elementFilter = document.getElementById('filter-element').value;
+                const roleFilter = document.getElementById('filter-role').value;
+                const tierFilter = document.getElementById('filter-tier').value;
+                const passiveSearch = document.getElementById('filter-passive').value.toLowerCase();
+            
+                list.innerHTML = '';
+            
+                database.forEach(champ => {
+            
+                    if (roleFilter !== 'All' && !champ.roles.includes(roleFilter)) return;
+                    if (tierFilter !== 'All' && champ.tier !== tierFilter) return;
+            
+                    if (elementFilter !== 'All' && champ.element !== elementFilter) return;
+                    if (nameSearch && !champ.name.toLowerCase().includes(nameSearch)) return;
+            
+                    if (passiveSearch) {
+                        const hasPassive = champ.passives.some(p => p.toLowerCase().includes(passiveSearch));
+                        const hasAbility = champ.abilities.some(a => a.toLowerCase().includes(passiveSearch));
+                        if (!hasPassive && !hasAbility) return;
+                    }
+            
+                    const inArmy = army.some(slot => slot.champion && slot.champion.id === champ.id);
+            
+            
+                    let slotOptions = '';
+                    let validSlotsCount = 0;
+            
+                    if (!inArmy && !champ.excluded) {
+            
+                        for (let i = 3; i < 7; i++) {
+                            const slotCfgRole = document.getElementById(`cfg-s${i}`).value;
+                            const isEmpty = army[i].champion === null;
+                            const roleMatch = (slotCfgRole === 'Any' || champ.roles.includes(slotCfgRole));
+            
+            
+                            const slotUnit = army[i].unit;
+                            const trebuchetMatch = (slotUnit !== 'Trebuchets' || champ.roles.includes('Engineer'));
+            
+                            if (isEmpty && roleMatch && trebuchetMatch) {
+                                slotOptions += `<option value="${i}">${SLOT_NAMES[i]}</option>`;
+                                validSlotsCount++;
+                            }
+                        }
+                    }
+            
+                    const div = document.createElement('div');
+                    div.className = `champ-item ${champ.excluded ? 'disabled' : ''}`;
+                    div.setAttribute('data-tier', champ.tier);
+            
+                    div.innerHTML = `
+                    <div class="champ-header">
+                        <div>
+                            <strong>${champ.name}</strong><br>
+                            <span class="champ-ability">★ ${champ.abilities.join(' • ')}</span>
+                        </div>
+                        <span class="champ-tags">
+                            ${champ.roles.join(' / ')}<br>
+                            <span style="color: var(--${champ.element.toLowerCase()})">${champ.element}</span>
+                            ${champ.unitLock !== 'Any' ? `<span class="champ-lock-warn">[${champ.unitLock}]</span> ` : ''}
+                        </span>
+                    </div>
+                    <div class="champ-passives">${champ.passives.join(' • ')}</div>
+                    <div class="champ-actions">
+                        <button class="btn-toggle" onclick="toggleExclude('${champ.id}')">
+                            ${champ.excluded ? 'Enable' : 'Disable'}
+                        </button>
+                        <div class="champ-assign-row">
+                            <select id="slot-pick-${champ.id}" ${(!validSlotsCount || inArmy || champ.excluded) ? 'disabled' : ''}>
+                                ${validSlotsCount ? slotOptions : '<option>No matching empty slots</option>'}
+                            </select>
+                            <button class="btn-assign" 
+                                ${(!validSlotsCount || inArmy || champ.excluded) ? 'disabled' : ''} 
+                                onclick="assignChampion('${champ.id}')">
+                                ${inArmy ? 'Assigned' : 'Assign'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                    list.appendChild(div);
+                });
+            }
+            
+            
+            
+            
+            
+            
+            function handleRoleChange(index, newRole) {
+                const slot = army[index];
+            
+            
+                if (slot.champion) {
+                    if (newRole !== 'Any' && !slot.champion.roles.includes(newRole)) {
+                        slot.champion = null;
+                    }
+                }
+            
+            
+                if (slot.unit) {
+                    const unitDef = UNIT_TYPES.find(u => u.id === slot.unit);
+                    if (unitDef && newRole !== 'Any' && unitDef.role !== newRole) {
+                        slot.unit = null;
+                    }
+                }
+            
+                renderArmy();
+                renderDatabase();
+            }
+            
+            function updateUnit(index, unitName) {
+                army[index].unit = unitName || null;
+            
+            
+                const champ = army[index].champion;
+                if (champ && unitName === 'Trebuchets' && !champ.roles.includes('Engineer')) {
+                    army[index].champion = null;
+                    alert(`${champ.name} was removed. Trebuchets can only be led by an Engineer.`);
+                }
+            
+                renderArmy();
+                renderDatabase();
+            }
+            
+            function toggleExclude(id) {
+                const champ = database.find(c => c.id === id);
+                if (champ) {
+                    champ.excluded = !champ.excluded;
+                    if (champ.excluded) {
+                        army.forEach((slot, idx) => {
+                            if (slot.champion && slot.champion.id === id) army[idx].champion = null;
+                        });
+                    }
+                }
+                renderDatabase();
+                renderArmy();
+            }
+            
+            function assignChampion(champId) {
+                const selectEl = document.getElementById(`slot-pick-${champId}`);
+                const slotIdx = parseInt(selectEl.value);
+            
+                if (!isNaN(slotIdx)) {
+                    const champ = database.find(c => c.id === champId);
+                    army[slotIdx].champion = champ;
+            
+                    if (champ.unitLock !== 'Any') {
+                        army[slotIdx].unit = champ.unitLock;
+                    }
+                    renderArmy();
+                    renderDatabase();
+                }
+            }
+            
+            function removeChampion(index) {
+                army[index].champion = null;
+                renderArmy();
+                renderDatabase();
+            }
+            
+            function clearArmy() {
+                army = Array(7).fill().map(() => ({ unit: null, champion: null }));
+                renderArmy();
+                renderDatabase();
+            }
+            
+            
+            
+            
+            function executeAutoBuild() {
+                clearArmy();
+            
+            
+                const targetUnit = document.getElementById('auto-unit').value;
+                const targetEle = document.getElementById('auto-element').value;
+            
+            
+                const rawAbilities = document.getElementById('auto-ability').value.toLowerCase();
+                const userAbilitiesArr = rawAbilities.split(',').map(s => s.trim()).filter(Boolean);
+            
+                const rawPassives = document.getElementById('auto-passive').value.toLowerCase();
+                const userPassivesArr = rawPassives.split(',').map(s => s.trim()).filter(Boolean);
+            
+            
+                const unitCounters = {
+                    'Axes': ['Archers', 'Swordsmen'],
+                    'Swordsmen': ['Crossbowmen', 'Cavalry'],
+                    'Cavalry': ['Catapults', 'Axes']
+                };
+            
+                const elementStrategies = {
+                    'Physical': ['physical slayer', 'physical defense', 'fire specialist'],
+                    'Fire': ['fire slayer', 'fire defense', 'frost specialist'],
+                    'Frost': ['frost slayer', 'frost defense', 'lightning specialist'],
+                    'Lightning': ['lightning slayer', 'lightning defense', 'fire specialist']
+                };
+            
+                const tierWeights = { 'Mythic': 40, 'Epic': 30, 'Rare': 20, 'Uncommon': 10 };
+            
+                const idealUnits = unitCounters[targetUnit] || [];
+                const strategyPassives = elementStrategies[targetEle] || [];
+            
+                let availableChamps = [...database].filter(c => !c.excluded);
+            
+            
+                for (let i = 0; i < 7; i++) {
+                    const requestedRole = document.getElementById(`cfg-s${i}`).value;
+                    const isChampSlot = i >= 3;
+            
+            
+                    let selectedUnit = null;
+                    let possibleUnits = UNIT_TYPES;
+            
+                    if (requestedRole !== 'Any') {
+                        possibleUnits = possibleUnits.filter(u => u.role === requestedRole);
+                    }
+            
+                    const optimalUnits = possibleUnits.filter(u => idealUnits.includes(u.id));
+                    if (optimalUnits.length > 0) {
+                        selectedUnit = optimalUnits[0].id;
+                    } else {
+                        selectedUnit = possibleUnits[Math.floor(Math.random() * possibleUnits.length)].id;
+                    }
+            
+            
+                    if (isChampSlot) {
+                        let validChamps = availableChamps.filter(c => {
+            
+                            if (requestedRole !== 'Any' && !c.roles.includes(requestedRole)) return false;
+            
+            
+                            if (c.unitLock !== 'Any' && c.unitLock !== selectedUnit) return false;
+            
+            
+                            if (selectedUnit === 'Trebuchets' && !c.roles.includes('Engineer')) return false;
+            
+                            return true;
+                        });
+            
+            
+                        validChamps.sort((a, b) => {
+                            let scoreA = tierWeights[a.tier] || 0;
+                            let scoreB = tierWeights[b.tier] || 0;
+            
+            
+                            userAbilitiesArr.forEach(ua => {
+                                if (a.abilities.some(ab => ab.toLowerCase().includes(ua))) scoreA += 40;
+                                if (b.abilities.some(ab => ab.toLowerCase().includes(ua))) scoreB += 40;
+                            });
+            
+            
+                            userPassivesArr.forEach(up => {
+                                if (a.passives.some(p => p.toLowerCase().includes(up))) scoreA += 50;
+                                if (b.passives.some(p => p.toLowerCase().includes(up))) scoreB += 50;
+                            });
+            
+            
+                            strategyPassives.forEach(sp => {
+                                if (a.passives.some(p => p.toLowerCase().includes(sp))) scoreA += 30;
+                                if (b.passives.some(p => p.toLowerCase().includes(sp))) scoreB += 30;
+                            });
+            
+                            return scoreB - scoreA;
+                        });
+            
+            
+                        if (validChamps.length > 0) {
+                            const chosenChamp = validChamps[0];
+                            army[i].champion = chosenChamp;
+            
+                            if (chosenChamp.unitLock !== 'Any') {
+                                selectedUnit = chosenChamp.unitLock;
+                            }
+            
+            
+                            availableChamps = availableChamps.filter(c => c.id !== chosenChamp.id);
+                        }
+                    }
+                    army[i].unit = selectedUnit;
+                }
+            
+                renderArmy();
+                renderDatabase();
+            }
+            
+            initUI();
+            
+        </script>
+    </body>
+</html>
